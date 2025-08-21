@@ -1507,7 +1507,7 @@ void GameLogic::logicMessageDispatcher( GameMessage *msg, void *userData )
 			{
 				Money *money = thisPlayer->getMoney();
 				UnsignedInt amount = building->getTemplate()->calcCostToBuild( thisPlayer );
-				money->deposit( amount );
+				money->deposit( amount, TRUE, FALSE );
 			}
 
 			//
