@@ -655,6 +655,11 @@ public:
 
 	// remove an object from any hotkey squads that its in.
 	void removeObjectFromHotkeySquad(Object *objToRemove);
+	// remove all units from every hotkey squad
+	void clearHotkeyTeams();
+
+	// automatically group currently selected units into hotkey squads of given size
+	void autoGroupSelectedUnits(Int groupSize);
 
 	void setAttackedBy( Int playerNdx );
 	Bool getAttackedBy( Int playerNdx ) const;

@@ -3850,6 +3850,16 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 			break;
 		}
 
+		// --------------------------------------------------------------------------------------------
+		case GameMessage::MSG_CLEAR_HOTKEY_TEAMS:
+		{
+			Int playerIndex = msg->getPlayerIndex();
+			Player *player = ThePlayerList->getNthPlayer(playerIndex);
+			if (player && player->isLocalPlayer())
+				player->clearHotkeyTeams();
+			break;
+		}
+
 
 		// --------------------------------------------------------------------------------------------
 		case GameMessage::MSG_DESTROY_SELECTED_GROUP:

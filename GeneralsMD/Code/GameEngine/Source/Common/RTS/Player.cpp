@@ -67,6 +67,7 @@
 #include "Common/TunnelTracker.h"
 #include "Common/Upgrade.h"
 #include "Common/WellKnownKeys.h"
+#include "Common/KindOf.h"
 #include "Common/Xfer.h"
 #include "Common/BitFlagsIO.h"
 #include "Common/SpecialPower.h"
@@ -100,6 +101,7 @@
 #include "GameLogic/VictoryConditions.h"
 
 #include "GameNetwork/GameInfo.h"
+#include <vector>
 
 
 //Grey for neutral.
@@ -3775,6 +3777,146 @@ void Player::removeObjectFromHotkeySquad(Object *objToRemove)
 		}
 
 		m_squads[i]->removeObject(objToRemove);
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Clear all units from any hotkey squads. */
+//-------------------------------------------------------------------------------------------------
+void Player::clearHotkeyTeams()
+{
+	for (Int i = 0; i < NUM_HOTKEY_SQUADS; ++i)
+	{
+		if (m_squads[i])
+		{
+			m_squads[i]->clearSquad();
+		}
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Group currently selected units into hotkey squads by type. */
+//-------------------------------------------------------------------------------------------------
+void Player::autoGroupSelectedUnits(Int groupSize)
+{
+	if (groupSize <= 0 || m_currentSelection == NULL)
+	{
+		return;
+	}
+	clearHotkeyTeams();
+	VecObjectPtr selected = m_currentSelection->getLiveObjects();
+
+	std::vector<const ThingTemplate *> types;
+	std::vector<VecObjectPtr> groups;
+
+	Int num = selected.size();
+	for (Int i = 0; i < num; ++i)
+	{
+		Object *o = selected[i];
+		if (o)
+		{
+			const ThingTemplate *tmpl = o->getTemplate();
+			size_t b;
+			for (b = 0; b < types.size(); ++b)
+			{
+				if (types[b] == tmpl)
+				{
+					break;
+				}
+			}
+			if (b == types.size())
+			{
+				types.push_back(tmpl);
+				VecObjectPtr empty;
+				groups.push_back(empty);
+			}
+			groups[b].push_back(o);
+		}
+	}
+
+	static const Int hotkeyOrder[NUM_HOTKEY_SQUADS] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 0};
+	Int orderIdx = 0;
+	for (size_t b = 0; b < groups.size() && orderIdx < NUM_HOTKEY_SQUADS; ++b)
+	{
+		VecObjectPtr &vec = groups[b];
+		Real lastX = 0.0f;
+		Real lastY = 0.0f;
+		Bool haveLast = FALSE;
+		while (!vec.empty() && orderIdx < NUM_HOTKEY_SQUADS)
+		{
+			Int hotkey = hotkeyOrder[orderIdx++];
+			if (!m_squads[hotkey])
+			{
+				m_squads[hotkey] = newInstance(Squad);
+			}
+			else
+			{
+				m_squads[hotkey]->clearSquad();
+			}
+
+			Int firstIdx = (Int)vec.size() - 1;
+			if (haveLast)
+			{
+				Real bestDist = 0.0f;
+				for (Int i = 0; i < (Int)vec.size(); ++i)
+				{
+					const Coord3D *pi = vec[i]->getPosition();
+					Real dx = pi->x - lastX;
+					Real dy = pi->y - lastY;
+					Real dist = dx * dx + dy * dy;
+					if (i == 0 || dist < bestDist)
+					{
+						bestDist = dist;
+						firstIdx = i;
+					}
+				}
+			}
+
+			Object *first = vec[firstIdx];
+			vec[firstIdx] = vec.back();
+			vec.pop_back();
+			m_squads[hotkey]->addObject(first);
+
+			Real cx = first->getPosition()->x;
+			Real cy = first->getPosition()->y;
+			Int count = 1;
+
+			while (count < groupSize && !vec.empty())
+			{
+				Real centerX = cx / count;
+				Real centerY = cy / count;
+				Int bestIdx = 0;
+				const Coord3D *pBest = vec[0]->getPosition();
+				Real dx = pBest->x - centerX;
+				Real dy = pBest->y - centerY;
+				Real bestDist = dx * dx + dy * dy;
+
+				for (Int j = 1; j < (Int)vec.size(); ++j)
+				{
+					const Coord3D *pj = vec[j]->getPosition();
+					dx = pj->x - centerX;
+					dy = pj->y - centerY;
+					Real dist = dx * dx + dy * dy;
+					if (dist < bestDist)
+					{
+						bestDist = dist;
+						bestIdx = j;
+						pBest = pj;
+					}
+				}
+
+				m_squads[hotkey]->addObject(vec[bestIdx]);
+				cx += pBest->x;
+				cy += pBest->y;
+				vec[bestIdx] = vec.back();
+				vec.pop_back();
+				++count;
+			}
+
+			lastX = cx / count;
+			lastY = cy / count;
+			haveLast = TRUE;
+		}
 	}
 }
 

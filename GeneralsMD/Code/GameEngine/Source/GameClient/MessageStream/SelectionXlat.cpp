@@ -1232,6 +1232,178 @@ GameMessageDisposition SelectionTranslator::translateGameMessage(const GameMessa
 		}
 
 		//-----------------------------------------------------------------------------
+		case GameMessage::MSG_META_CLEAR_HOTKEY_TEAMS:
+		{
+			TheMessageStream->appendMessage(GameMessage::MSG_CLEAR_HOTKEY_TEAMS);
+			disp = DESTROY_MESSAGE;
+			break;
+		}
+
+		case GameMessage::MSG_META_AUTO_GROUP1:
+		case GameMessage::MSG_META_AUTO_GROUP2:
+		case GameMessage::MSG_META_AUTO_GROUP3:
+		case GameMessage::MSG_META_AUTO_GROUP4:
+		{
+			// Auto-group currently selected units into control groups using existing retail-compatible
+			// create-team messages. Numbering starts with the units closest to the camera.
+			Int groupSize = t - GameMessage::MSG_META_AUTO_GROUP1 + 1; // 1..4
+			if (groupSize <= 0)
+			{
+				disp = DESTROY_MESSAGE;
+				break;
+			}
+
+			// Gather selected and locally controlled objects
+			std::vector<Object *> selected;
+			{
+				Drawable *drawable = TheGameClient->getDrawableList();
+				while (drawable)
+				{
+					Object *obj = drawable->getObject();
+					if (drawable->isSelected() && obj && obj->isLocallyControlled() && !obj->isContained())
+					{
+						selected.push_back(obj);
+					}
+					drawable = drawable->getNextDrawable();
+				}
+			}
+
+			if (selected.empty())
+			{
+				disp = DESTROY_MESSAGE;
+				break;
+			}
+
+			// Clear existing hotkey teams first to avoid leftovers
+			TheMessageStream->appendMessage(GameMessage::MSG_CLEAR_HOTKEY_TEAMS);
+
+			// Partition by unit type (ThingTemplate)
+			std::vector<const ThingTemplate *> types;
+			std::vector<VecObjectPtr> byType;
+			for (size_t i = 0; i < selected.size(); ++i)
+			{
+				Object *o = selected[i];
+				const ThingTemplate *tmpl = o->getTemplate();
+				size_t idx = 0;
+				for (; idx < types.size(); ++idx)
+				{
+					if (types[idx] == tmpl)
+						break;
+				}
+				if (idx == types.size())
+				{
+					types.push_back(tmpl);
+					VecObjectPtr empty;
+					byType.push_back(empty);
+				}
+				byType[idx].push_back(o);
+			}
+
+			// Determine camera position
+			Coord3D cam;
+			TheTacticalView->getPosition(&cam);
+
+			// Hotkey order 1..9, then 0
+			static const Int hotkeyOrder[NUM_HOTKEY_SQUADS] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 0};
+			Int orderIdx = 0;
+
+			// Build groups from nearest-to-camera outward
+			while (orderIdx < NUM_HOTKEY_SQUADS)
+			{
+				// Check if any units remain
+				Bool anyLeft = FALSE;
+				for (size_t chk = 0; chk < byType.size(); ++chk)
+				{
+					if (!byType[chk].empty())
+					{
+						anyLeft = TRUE;
+						break;
+					}
+				}
+				if (!anyLeft)
+					break;
+
+				// Find nearest remaining unit to camera across all types
+				size_t typeIdx = 0;
+				Int objIdx = -1;
+				Bool found = FALSE;
+				Real bestDist = 0.0f;
+				for (size_t b = 0; b < byType.size(); ++b)
+				{
+					VecObjectPtr &vec = byType[b];
+					for (Int i2 = 0; i2 < (Int)vec.size(); ++i2)
+					{
+						const Coord3D *p = vec[i2]->getPosition();
+						Real dx2 = p->x - cam.x;
+						Real dy2 = p->y - cam.y;
+						Real d2 = dx2 * dx2 + dy2 * dy2;
+						if (!found || d2 < bestDist)
+						{
+							found = TRUE;
+							bestDist = d2;
+							typeIdx = b;
+							objIdx = i2;
+						}
+					}
+				}
+				if (!found)
+					break;
+
+				VecObjectPtr &vec = byType[typeIdx];
+				if (vec.empty())
+					break;
+
+				Int hotkey = hotkeyOrder[orderIdx++];
+				GameMessage *newmsg = TheMessageStream->appendMessage((GameMessage::Type)(GameMessage::MSG_CREATE_TEAM0 + hotkey));
+
+				// Seed with nearest unit
+				Object *first = vec[objIdx];
+				vec[objIdx] = vec.back();
+				vec.pop_back();
+				newmsg->appendObjectIDArgument(first->getID());
+
+				Real cx = first->getPosition()->x;
+				Real cy = first->getPosition()->y;
+				Int count = 1;
+
+				// Fill up to groupSize with nearest to current center within same type
+				while (count < groupSize && !vec.empty())
+				{
+					Real centerX = cx / count;
+					Real centerY = cy / count;
+					Int bestIdx = 0;
+					const Coord3D *pBest = vec[0]->getPosition();
+					Real dx = pBest->x - centerX;
+					Real dy = pBest->y - centerY;
+					Real bestDist = dx * dx + dy * dy;
+
+					for (Int j = 1; j < (Int)vec.size(); ++j)
+					{
+						const Coord3D *pj = vec[j]->getPosition();
+						dx = pj->x - centerX;
+						dy = pj->y - centerY;
+						Real d2 = dx * dx + dy * dy;
+						if (d2 < bestDist)
+						{
+							bestDist = d2;
+							bestIdx = j;
+							pBest = pj;
+						}
+					}
+
+					newmsg->appendObjectIDArgument(vec[bestIdx]->getID());
+					cx += pBest->x;
+					cy += pBest->y;
+					vec[bestIdx] = vec.back();
+					vec.pop_back();
+					++count;
+				}
+			}
+
+			disp = DESTROY_MESSAGE;
+			break;
+		}
+
 		case GameMessage::MSG_META_VIEW_TEAM0:
 		case GameMessage::MSG_META_VIEW_TEAM1:
 		case GameMessage::MSG_META_VIEW_TEAM2:

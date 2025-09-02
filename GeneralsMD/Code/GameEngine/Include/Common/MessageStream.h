@@ -438,6 +438,11 @@ public:
 
 		MSG_META_PLACE_BEACON,
 		MSG_META_REMOVE_BEACON,
+		MSG_META_CLEAR_HOTKEY_TEAMS, 								///< clear all hotkey squads
+		MSG_META_AUTO_GROUP1, 											///< auto group selected units into groups of 1
+		MSG_META_AUTO_GROUP2, 											///< auto group selected units into groups of 2
+		MSG_META_AUTO_GROUP3, 											///< auto group selected units into groups of 3
+		MSG_META_AUTO_GROUP4, 											///< auto group selected units into groups of 4
 
 		MSG_END_META_MESSAGES,											///< Marker to delineate "meta" messages
 
@@ -603,6 +608,7 @@ public:
 		MSG_LOGIC_CRC,															///< CRC from the logic passed around in a network game :)
 		MSG_SET_MINE_CLEARING_DETAIL,								///< CRC from the logic passed around in a network game :)
 		MSG_ENABLE_RETALIATION_MODE,								///< Turn retaliation mode on or off for the specified player.
+		MSG_CLEAR_HOTKEY_TEAMS, ///< Remove all units from hotkey squads
 
 		MSG_BEGIN_DEBUG_NETWORK_MESSAGES = 1900,		///< network messages that exist only in debug/internal builds. all grouped separately.
 

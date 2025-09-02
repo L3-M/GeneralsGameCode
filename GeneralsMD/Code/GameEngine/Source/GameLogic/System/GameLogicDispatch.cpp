@@ -1987,6 +1987,15 @@ void GameLogic::logicMessageDispatcher( GameMessage *msg, void *userData )
 			break;
 		}
 
+		case GameMessage::MSG_CLEAR_HOTKEY_TEAMS:
+		{
+			Int playerIndex = msg->getPlayerIndex();
+			Player *player = ThePlayerList->getNthPlayer(playerIndex);
+			if (player && !player->isLocalPlayer())
+				player->clearHotkeyTeams();
+			break;
+		}
+
 
 		//---------------------------------------------------------------------------------------------
 		case GameMessage::MSG_LOGIC_CRC:
