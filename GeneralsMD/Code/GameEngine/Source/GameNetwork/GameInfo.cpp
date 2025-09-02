@@ -32,6 +32,7 @@
 #include "Common/file.h"
 #include "Common/FileSystem.h"
 #include "Common/GameState.h"
+#include "Common/GlobalData.h"
 #include "GameClient/GameText.h"
 #include "GameClient/MapUtil.h"
 #include "Common/MultiplayerSettings.h"
@@ -124,7 +125,7 @@ static Bool isSlotLocalAlly(const GameSlot *slot)
 
 UnicodeString GameSlot::getApparentPlayerTemplateDisplayName( void ) const
 {
-	if (TheMultiplayerSettings && TheMultiplayerSettings->showRandomPlayerTemplate() &&
+	if (!TheGlobalData->m_showColorArmyPos && TheMultiplayerSettings && TheMultiplayerSettings->showRandomPlayerTemplate() &&
 		m_origPlayerTemplate == PLAYERTEMPLATE_RANDOM && !isSlotLocalAlly(this))
 	{
 		return TheGameText->fetch("GUI:Random");
@@ -144,7 +145,7 @@ UnicodeString GameSlot::getApparentPlayerTemplateDisplayName( void ) const
 
 Int GameSlot::getApparentPlayerTemplate( void ) const
 {
-	if (TheMultiplayerSettings && TheMultiplayerSettings->showRandomPlayerTemplate() &&
+	if (!TheGlobalData->m_showColorArmyPos && TheMultiplayerSettings && TheMultiplayerSettings->showRandomPlayerTemplate() &&
 		!isSlotLocalAlly(this))
 	{
 		return m_origPlayerTemplate;
@@ -157,7 +158,7 @@ Int GameSlot::getApparentColor( void ) const
 	if (TheMultiplayerSettings && m_origPlayerTemplate == PLAYERTEMPLATE_OBSERVER)
 		return TheMultiplayerSettings->getColor(PLAYERTEMPLATE_OBSERVER)->getColor();
 
-	if (TheMultiplayerSettings && TheMultiplayerSettings->showRandomColor() &&
+	if (!TheGlobalData->m_showColorArmyPos && TheMultiplayerSettings && TheMultiplayerSettings->showRandomColor() &&
 		!isSlotLocalAlly(this))
 	{
 		return m_origColor;
@@ -167,7 +168,7 @@ Int GameSlot::getApparentColor( void ) const
 
 Int GameSlot::getApparentStartPos( void ) const
 {
-	if (TheMultiplayerSettings && TheMultiplayerSettings->showRandomStartPos() &&
+	if (!TheGlobalData->m_showColorArmyPos && TheMultiplayerSettings && TheMultiplayerSettings->showRandomStartPos() &&
 		!isSlotLocalAlly(this))
 	{
 		return m_origStartPos;

@@ -139,6 +139,8 @@ public:
 	Bool getNoDynamicLODEnabled(void);
 	Bool getBuildingOcclusionEnabled(void);
 	Bool getShowMoneyPerMinute(void);
+	Bool getShowColorArmyPos(void);
+	Bool getShowObjectsUnderFog(void);
 	Int getParticleCap(void);
 
 	Int	 getCampaignDifficulty(void);

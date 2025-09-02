@@ -37,6 +37,8 @@
 #include "Common/GameEngine.h"
 #include "Common/GameType.h"
 #include "Common/GlobalData.h"
+#include "Common/UserPreferences.h"
+#include "Common/UnicodeString.h"
 #include "Common/MessageStream.h"
 #include "Common/MiscAudio.h"
 #include "Common/MultiplayerSettings.h"
@@ -3382,6 +3384,44 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 				}
 
 				ToggleControlBar();
+			}
+			disp = DESTROY_MESSAGE;
+			break;
+		}
+
+		//-----------------------------------------------------------------------------------------
+		case GameMessage::MSG_META_TOGGLE_SHOW_OBJECTS_UNDERFOG:
+		{
+			TheWritableGlobalData->m_showObjectsUnderFog = !TheGlobalData->m_showObjectsUnderFog;
+			OptionPreferences opts;
+			if (opts.loadFromIniFile())
+			{
+				opts.setBool("ShowObjectsUnderFog", TheGlobalData->m_showObjectsUnderFog);
+				opts.write();
+			}
+			if (TheInGameUI)
+			{
+				UnicodeString message = TheGlobalData->m_showObjectsUnderFog ? UnicodeString(L"ShowObjectsUnderFog enabled") : UnicodeString(L"ShowObjectsUnderFog disabled");
+				TheInGameUI->messageNoFormat(message);
+			}
+			disp = DESTROY_MESSAGE;
+			break;
+		}
+
+		//-----------------------------------------------------------------------------------------
+		case GameMessage::MSG_META_TOGGLE_COLOR_ARMY_POS:
+		{
+			TheWritableGlobalData->m_showColorArmyPos = !TheGlobalData->m_showColorArmyPos;
+			OptionPreferences opts;
+			if (opts.loadFromIniFile())
+			{
+				opts.setBool("ShowColorArmyPos", TheGlobalData->m_showColorArmyPos);
+				opts.write();
+			}
+			if (TheInGameUI)
+			{
+				UnicodeString message = TheGlobalData->m_showColorArmyPos ? UnicodeString(L"ShowColorArmyPos enabled") : UnicodeString(L"ShowColorArmyPos disabled");
+				TheInGameUI->messageNoFormat(message);
 			}
 			disp = DESTROY_MESSAGE;
 			break;

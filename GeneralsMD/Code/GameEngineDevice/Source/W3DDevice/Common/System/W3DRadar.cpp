@@ -640,7 +640,7 @@ void W3DRadar::renderObjectList( const RadarObject *listHead, TextureClass *text
 	for( const RadarObject *rObj = listHead; rObj; rObj = rObj->friend_getNext() )
 	{
 
-		if (rObj->isTemporarilyHidden())
+		if (!TheGlobalData->m_showObjectsUnderFog && rObj->isTemporarilyHidden())
 			continue;
 
 		// get object
@@ -654,8 +654,10 @@ void W3DRadar::renderObjectList( const RadarObject *listHead, TextureClass *text
     Bool skip = FALSE;
 
 		// check for shrouded status
-		if (obj->getShroudedStatus(playerIndex) > OBJECTSHROUD_PARTIAL_CLEAR)
+		if (!TheGlobalData->m_showObjectsUnderFog && obj->getShroudedStatus(playerIndex) > OBJECTSHROUD_PARTIAL_CLEAR)
 			skip = TRUE;	//object is fogged or shrouded, don't render it.
+		else if (TheGlobalData->m_showObjectsUnderFog)
+			skip = FALSE;   //object is rendered even if shrouded
 
  		//
  		// objects with a local only unit priority will only appear on the radar if they

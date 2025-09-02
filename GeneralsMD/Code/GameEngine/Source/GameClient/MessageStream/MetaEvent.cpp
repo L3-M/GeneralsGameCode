@@ -187,6 +187,8 @@ static const LookupListRec GameMessageMetaTypeNames[] =
 	{ "TOGGLE_PAUSE_ALT",													GameMessage::MSG_META_TOGGLE_PAUSE_ALT },
 	{ "STEP_FRAME",																GameMessage::MSG_META_STEP_FRAME },
 	{ "STEP_FRAME_ALT",														GameMessage::MSG_META_STEP_FRAME_ALT },
+	{ "TOGGLE_SHOW_OBJECTS_UNDERFOG",             GameMessage::MSG_META_TOGGLE_SHOW_OBJECTS_UNDERFOG },
+	{ "TOGGLE_COLOR_ARMY_POS",                    GameMessage::MSG_META_TOGGLE_COLOR_ARMY_POS },
 	{ "DEMO_INSTANT_QUIT",												GameMessage::MSG_META_DEMO_INSTANT_QUIT },
 
 #if defined(_ALLOW_DEBUG_CHEATS_IN_RELEASE)//may be defined in GameCommon.h
@@ -727,6 +729,26 @@ MetaMapRec *MetaMap::getMetaMapRec(GameMessage::Type t)
 	// TheSuperHackers @info A default mapping for MSG_META_SELECT_ALL_AIRCRAFT would be useful for Generals
 	// but is not recommended, because it will cause key mapping conflicts with original game languages.
 
+	{
+		MetaMapRec *map = TheMetaMap->getMetaMapRec(GameMessage::MSG_META_TOGGLE_SHOW_OBJECTS_UNDERFOG);
+		if (map->m_key == MK_NONE)
+		{
+			map->m_key = MK_F1;
+			map->m_transition = DOWN;
+			map->m_modState = NONE;
+			map->m_usableIn = COMMANDUSABLE_EVERYWHERE;
+		}
+	}
+	{
+		MetaMapRec *map = TheMetaMap->getMetaMapRec(GameMessage::MSG_META_TOGGLE_COLOR_ARMY_POS);
+		if (map->m_key == MK_NONE)
+		{
+			map->m_key = MK_F2;
+			map->m_transition = DOWN;
+			map->m_modState = NONE;
+			map->m_usableIn = COMMANDUSABLE_EVERYWHERE;
+		}
+	}
 	{
 		// Is useful for Generals and Zero Hour.
 		MetaMapRec *map = TheMetaMap->getMetaMapRec(GameMessage::MSG_META_INCREASE_MAX_RENDER_FPS);

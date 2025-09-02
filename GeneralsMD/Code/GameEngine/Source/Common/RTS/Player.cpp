@@ -3214,6 +3214,9 @@ void Player::enableRadar()
 //-------------------------------------------------------------------------------------------------
 Bool Player::hasRadar() const
 {
+	if (TheGlobalData->m_showObjectsUnderFog)
+		return TRUE;
+
 	if( m_radarDisabled  && (m_disableProofRadarCount == 0) )
 		return FALSE;// Nope, no matter how many you have, if I say no, you don't have it
 

@@ -916,6 +916,9 @@ void Drawable::allocateShadows(void)
 //-------------------------------------------------------------------------------------------------
 void Drawable::setFullyObscuredByShroud(Bool fullyObscured)
 {
+	if (TheGlobalData->m_showObjectsUnderFog)
+		fullyObscured = false;
+
 	if (m_drawableFullyObscuredByShroud != fullyObscured)
 	{
 		for (DrawModule** dm = getDrawModules(); *dm; ++dm)
@@ -2529,6 +2532,9 @@ void Drawable::validatePos() const
 //=============================================================================
 void Drawable::setStealthLook(StealthLookType look)
 {
+	if (TheGlobalData->m_showObjectsUnderFog)
+		look = m_stealthLook;
+
 	if (look != m_stealthLook)
 	{
 

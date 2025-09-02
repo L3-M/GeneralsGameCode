@@ -943,6 +943,8 @@ GlobalData::GlobalData()
 	m_useCameraInReplay = FALSE;
 
 	m_showMoneyPerMinute = FALSE;
+	m_showColorArmyPos = FALSE;
+	m_showObjectsUnderFog = FALSE;
 
 	m_systemTimeFontSize = 8;
 	m_gameTimeFontSize = 8;
@@ -1217,6 +1219,8 @@ void GlobalData::parseGameDataDefinition( INI* ini )
 	TheWritableGlobalData->m_systemTimeFontSize = optionPref.getSystemTimeFontSize();
 	TheWritableGlobalData->m_gameTimeFontSize = optionPref.getGameTimeFontSize();
 	TheWritableGlobalData->m_showMoneyPerMinute = optionPref.getShowMoneyPerMinute();
+	TheWritableGlobalData->m_showColorArmyPos = optionPref.getShowColorArmyPos();
+	TheWritableGlobalData->m_showObjectsUnderFog = optionPref.getShowObjectsUnderFog();
 
 	Int val=optionPref.getGammaValue();
 	//generate a value between 0.6 and 2.0.

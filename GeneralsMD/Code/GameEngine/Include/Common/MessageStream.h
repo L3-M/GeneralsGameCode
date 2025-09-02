@@ -247,6 +247,8 @@ public:
 		MSG_META_DECREASE_LOGIC_TIME_SCALE,					///< TheSuperHackers @feature Decrease the logic time scale
 		MSG_META_TOGGLE_LOWER_DETAILS,							///< toggles graphics options to crappy mode instantly
 		MSG_META_TOGGLE_CONTROL_BAR,								///< show/hide controlbar
+		MSG_META_TOGGLE_SHOW_OBJECTS_UNDERFOG,                                          ///< toggle showing objects under fog
+		MSG_META_TOGGLE_COLOR_ARMY_POS,                                                 ///< toggle showing color and army positions
 
 		MSG_META_BEGIN_PATH_BUILD,									///< enter path-building mode
 		MSG_META_END_PATH_BUILD,										///< exit path-building mode

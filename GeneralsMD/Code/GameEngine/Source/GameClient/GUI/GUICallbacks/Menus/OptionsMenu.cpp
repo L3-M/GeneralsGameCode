@@ -36,6 +36,7 @@
 #include "Common/AudioSettings.h"
 #include "Common/GameAudio.h"
 #include "Common/GameEngine.h"
+#include "Common/GlobalData.h"
 #include "Common/UserPreferences.h"
 #include "Common/GameLOD.h"
 #include "Common/Registry.h"
@@ -939,6 +940,32 @@ Bool OptionPreferences::getShowMoneyPerMinute(void)
 	return FALSE;
 }
 
+Bool OptionPreferences::getShowColorArmyPos(void)
+{
+	OptionPreferences::const_iterator it = find("ShowColorArmyPos");
+	if (it == end())
+		return TheGlobalData->m_showColorArmyPos;
+
+	if (stricmp(it->second.str(), "yes") == 0)
+	{
+		return TRUE;
+	}
+	return FALSE;
+}
+
+Bool OptionPreferences::getShowObjectsUnderFog(void)
+{
+	OptionPreferences::const_iterator it = find("ShowObjectsUnderFog");
+	if (it == end())
+		return TheGlobalData->m_showObjectsUnderFog;
+
+	if (stricmp(it->second.str(), "yes") == 0)
+	{
+		return TRUE;
+	}
+	return FALSE;
+}
+
 Real OptionPreferences::getResolutionFontAdjustment(void)
 {
 	OptionPreferences::const_iterator it = find("ResolutionFontAdjustment");
@@ -1515,6 +1542,24 @@ static void saveOptions( void )
 		AsciiString prefString;
 		prefString = showIncome ? "yes" : "no";
 		(*pref)["ShowMoneyPerMinute"] = prefString;
+	}
+
+	//-------------------------------------------------------------------------------------------------
+	// Set Show Color Army Pos
+	{
+		Bool showColor = pref->getShowColorArmyPos();
+		AsciiString prefString;
+		prefString = showColor ? "yes" : "no";
+		(*pref)["ShowColorArmyPos"] = prefString;
+	}
+
+	//-------------------------------------------------------------------------------------------------
+	// Set Show Objects Under Fog
+	{
+		Bool showFog = pref->getShowObjectsUnderFog();
+		AsciiString prefString;
+		prefString = showFog ? "yes" : "no";
+		(*pref)["ShowObjectsUnderFog"] = prefString;
 	}
 
 	//-------------------------------------------------------------------------------------------------
