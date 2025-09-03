@@ -1917,7 +1917,7 @@ void InGameUI::update( void )
 				UnicodeString moneyStr = formatMoneyValue(currentMoney);
 				UnicodeString incomeStr = formatIncomeValue(cashPerMin);
 
-				buffer.format(TheGameText->FETCH_OR_SUBSTITUTE_FORMAT("GUI:ControlBarMoneyDisplayIncome", L"%ls (%ls)", moneyStr.str(), incomeStr.str()));
+				buffer.format(TheGameText->FETCH_OR_SUBSTITUTE_FORMAT("GUI:ControlBarMoneyDisplayIncome", L"$ %ls   $ %ls/min", moneyStr.str(), incomeStr.str()));
 				GadgetStaticTextSetText(moneyWin, buffer);
 				lastMoney = currentMoney;
 				lastIncome = cashPerMin;
