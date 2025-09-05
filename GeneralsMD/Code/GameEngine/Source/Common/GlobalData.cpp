@@ -946,6 +946,8 @@ GlobalData::GlobalData()
 	m_showColorArmyPos = FALSE;
 	m_showObjectsUnderFog = FALSE;
 
+	m_networkLatencyFontSize = 8;
+	m_renderFpsFontSize = 8;
 	m_systemTimeFontSize = 8;
 	m_gameTimeFontSize = 8;
 
@@ -1216,6 +1218,8 @@ void GlobalData::parseGameDataDefinition( INI* ini )
 	TheWritableGlobalData->m_saveCameraInReplay = optionPref.saveCameraInReplays();
 	TheWritableGlobalData->m_useCameraInReplay = optionPref.useCameraInReplays();
 
+	TheWritableGlobalData->m_networkLatencyFontSize = optionPref.getNetworkLatencyFontSize();
+	TheWritableGlobalData->m_renderFpsFontSize = optionPref.getRenderFpsFontSize();
 	TheWritableGlobalData->m_systemTimeFontSize = optionPref.getSystemTimeFontSize();
 	TheWritableGlobalData->m_gameTimeFontSize = optionPref.getGameTimeFontSize();
 	TheWritableGlobalData->m_showMoneyPerMinute = optionPref.getShowMoneyPerMinute();
