@@ -35,6 +35,7 @@
 
 #include "GameLogic/Object.h"
 #include "GameLogic/Module/UpdateModule.h"
+#include "GameLogic/Module/ContainModule.h"
 
 #include "GameClient/Drawable.h"
 #include "GameClient/GameText.h"
@@ -42,6 +43,8 @@
 #include "GameClient/GameWindow.h"
 #include "GameClient/GameWindowManager.h"
 #include "GameClient/GadgetStaticText.h"
+
+#define EVACUATE_ID  11
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
@@ -77,15 +80,33 @@ void ControlBar::populateUnderConstruction( Object *objectUnderConstruction )
 	// get our parent window
 	GameWindow *parent = m_contextParent[ CP_UNDER_CONSTRUCTION ];
 
-	// set the cancel construction button
+        // set the cancel construction button
 /// @todo srj -- remove hard-coding here, please
-	const CommandButton *commandButton = findCommandButton( "Command_CancelConstruction" );
-	NameKeyType id;
-	id = TheNameKeyGenerator->nameToKey( "ControlBar.wnd:ButtonCancelConstruction" );
-	GameWindow *win = TheWindowManager->winGetWindowFromId( parent, id );
+        const CommandButton *commandButton = findCommandButton( "Command_CancelConstruction" );
+        NameKeyType id;
+        id = TheNameKeyGenerator->nameToKey( "ControlBar.wnd:ButtonCancelConstruction" );
+        GameWindow *win = TheWindowManager->winGetWindowFromId( parent, id );
 
-	setControlCommand( win, commandButton );
-	win->winSetStatus( WIN_STATUS_USE_OVERLAY_STATES );
+        setControlCommand( win, commandButton );
+        win->winSetStatus( WIN_STATUS_USE_OVERLAY_STATES );
+
+        // hide evacuate button by default
+        if (m_commandWindows[ EVACUATE_ID ])
+                m_commandWindows[ EVACUATE_ID ]->winHide( TRUE );
+
+        // if the object is a tunnel network, expose an evacuate command
+        ContainModuleInterface *contain = objectUnderConstruction->getContain();
+        if (contain && contain->isTunnelContain())
+        {
+                const CommandButton *evacuateCommand = findCommandButton( "Command_Evacuate" );
+                GameWindow *evacWin = m_commandWindows[ EVACUATE_ID ];
+                if (evacWin)
+                {
+                        setControlCommand( evacWin, evacuateCommand );
+                        evacWin->winHide( FALSE );
+                        evacWin->winEnable( contain->getContainCount() != 0 );
+                }
+        }
 
 	// set the text description of what is building
 	updateConstructionTextDisplay( objectUnderConstruction );
