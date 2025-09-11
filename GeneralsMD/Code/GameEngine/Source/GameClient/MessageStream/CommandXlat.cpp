@@ -3396,7 +3396,7 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 			OptionPreferences opts;
 			if (opts.loadFromIniFile())
 			{
-				opts.setBool("ShowObjectsUnderFog", TheGlobalData->m_showObjectsUnderFog);
+				opts["ShowObjectsUnderFog"] =  TheGlobalData->m_showObjectsUnderFog ? "yes" : "no";
 				opts.write();
 			}
 			if (TheInGameUI)
@@ -3415,7 +3415,7 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 			OptionPreferences opts;
 			if (opts.loadFromIniFile())
 			{
-				opts.setBool("ShowColorArmyPos", TheGlobalData->m_showColorArmyPos);
+				opts["ShowColorArmyPos"] =  TheGlobalData->m_showColorArmyPos ? "yes" : "no";
 				opts.write();
 			}
 			if (TheInGameUI)

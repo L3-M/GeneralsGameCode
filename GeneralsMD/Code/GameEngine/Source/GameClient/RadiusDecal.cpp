@@ -35,6 +35,7 @@
 #include "GameClient/RadiusDecal.h"
 #include "GameClient/Shadow.h"
 #include "GameLogic/GameLogic.h"
+#include "Common/GlobalData.h"
 
 
 // ------------------------------------------------------------------------------------------------
@@ -65,6 +66,8 @@ void RadiusDecalTemplate::createRadiusDecal(const Coord3D& pos, Real radius, con
 
 	// it is now considered nonEmpty, regardless of the state of m_decal, etc
 	result.m_empty = false;
+	result.m_owningPlayerIndex = owningPlayer->getPlayerIndex();
+
 
 	if (!m_onlyVisibleToOwningPlayer ||
 			owningPlayer->getPlayerIndex() == ThePlayerList->getLocalPlayer()->getPlayerIndex())
@@ -84,6 +87,31 @@ void RadiusDecalTemplate::createRadiusDecal(const Coord3D& pos, Real radius, con
 			result.m_decal->setColor(m_color == 0 ? owningPlayer->getPlayerColor() : m_color);
 			result.m_decal->setPosition(pos.x, pos.y, pos.z);
 			result.m_template = this;
+		}
+		else
+		{
+			DEBUG_CRASH(("Unable to add decal %s",decalInfo.m_ShadowName));
+		}
+	}
+	else
+	{
+		// Create hidden decal for non-owners so ShowObjectsUnderFog can enable it at runtime
+		Shadow::ShadowTypeInfo decalInfo;
+		decalInfo.allowUpdates = FALSE;										// shadow texture will never update
+		decalInfo.allowWorldAlign = TRUE;									// shadow image will wrap around world objects
+		decalInfo.m_type = m_shadowType;
+		strcpy(decalInfo.m_ShadowName, m_name.str());		// name of your texture
+		decalInfo.m_sizeX = radius*2;									// world space dimensions
+		decalInfo.m_sizeY = radius*2;									// world space dimensions
+
+		result.m_decal = TheProjectedShadowManager->addDecal(&decalInfo);
+		if (result.m_decal)
+		{
+			result.m_decal->setAngle(0.0f);
+			result.m_decal->setColor(m_color == 0 ? owningPlayer->getPlayerColor() : m_color);
+			result.m_decal->setPosition(pos.x, pos.y, pos.z);
+			result.m_template = this;
+			result.setOpacity(0.0f);
 		}
 		else
 		{
@@ -133,6 +161,7 @@ RadiusDecal::RadiusDecal() :
 	m_decal(NULL),
 	m_empty(true)
 {
+	m_owningPlayerIndex = -1;
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -179,6 +208,7 @@ void RadiusDecal::clear()
 	}
 	m_decal = NULL;
 	m_empty = true;
+	m_owningPlayerIndex = -1;
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -192,11 +222,27 @@ void RadiusDecal::update()
 {
 	if (m_decal && m_template)
 	{
+		// Determine visibility to local player dynamically
+		Bool visibleToLocal = TRUE;
+		if (TheGlobalData && TheGlobalData->m_showObjectsUnderFog)
+		{
+			visibleToLocal = TRUE;
+		}
+		else if (!m_template->m_onlyVisibleToOwningPlayer)
+		{
+			visibleToLocal = TRUE;
+		}
+		else
+		{
+			const Player *localPlayer = ThePlayerList->getLocalPlayer();
+			visibleToLocal = (localPlayer && (m_owningPlayerIndex == localPlayer->getPlayerIndex()));
+		}
+
 		UnsignedInt now = TheGameLogic->getFrame();
 		Real theta = (2*PI) * (Real)(now % m_template->m_opacityThrobTime) / (Real)m_template->m_opacityThrobTime;
 		Real percent = 0.5f * (Sin(theta) + 1.0f);
 		Int opac;
-		if( TheGameLogic->getDrawIconUI() )
+		if( TheGameLogic->getDrawIconUI() && visibleToLocal )
 		{
 			opac = REAL_TO_INT((m_template->m_minOpacity + percent * (m_template->m_maxOpacity - m_template->m_minOpacity)) * 255.0f);
 		}

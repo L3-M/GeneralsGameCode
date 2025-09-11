@@ -47,6 +47,7 @@ private:
 	const RadiusDecalTemplate*	m_template;
 	Shadow*											m_decal;
 	Bool												m_empty;
+	Int													m_owningPlayerIndex;
 public:
 	RadiusDecal();
 	RadiusDecal(const RadiusDecal& that);
