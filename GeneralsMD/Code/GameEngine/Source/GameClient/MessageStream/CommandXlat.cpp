@@ -46,6 +46,7 @@
 #include "Common/Player.h"
 #include "Common/PlayerList.h"
 #include "Common/PlayerTemplate.h"
+#include "Common/RandomValue.h"
 #include "Common/Radar.h"
 #include "Common/Recorder.h"
 #include "Common/SpecialPower.h"
@@ -3857,6 +3858,17 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 			Player *player = ThePlayerList->getNthPlayer(playerIndex);
 			if (player && player->isLocalPlayer())
 				player->clearHotkeyTeams();
+			break;
+		}
+
+		//-----------------------------------------------------------------------------------------
+		case GameMessage::MSG_META_FORCE_DESYNC:
+		{
+			// Advance the game-logic RNG seed only on this client to force a
+			// deterministic CRC mismatch across peers on the next CRC check.
+			(void)GetGameLogicRandomValue(0, 1, __FILE__, __LINE__);
+			TheInGameUI->messageNoFormat( TheGameText->FETCH_OR_SUBSTITUTE("GUI:ForceDesync", L"Forced desync test triggered") );
+			disp = DESTROY_MESSAGE;
 			break;
 		}
 

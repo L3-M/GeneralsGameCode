@@ -609,6 +609,7 @@ public:
 		MSG_SET_MINE_CLEARING_DETAIL,								///< CRC from the logic passed around in a network game :)
 		MSG_ENABLE_RETALIATION_MODE,								///< Turn retaliation mode on or off for the specified player.
 		MSG_CLEAR_HOTKEY_TEAMS, ///< Remove all units from hotkey squads
+		MSG_META_FORCE_DESYNC,											///< advance the game-logic RNG seed only on this client.
 
 		MSG_BEGIN_DEBUG_NETWORK_MESSAGES = 1900,		///< network messages that exist only in debug/internal builds. all grouped separately.
 

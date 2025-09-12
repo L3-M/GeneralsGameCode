@@ -172,6 +172,7 @@ static const LookupListRec GameMessageMetaTypeNames[] =
 	{ "TAKE_SCREENSHOT",													GameMessage::MSG_META_TAKE_SCREENSHOT },
 	{ "ALL_CHEER",																GameMessage::MSG_META_ALL_CHEER },
 	{ "CLEAR_HOTKEY_TEAMS",												GameMessage::MSG_META_CLEAR_HOTKEY_TEAMS },
+	{ "FORCE_DESYNC",															GameMessage::MSG_META_FORCE_DESYNC },
 	{ "AUTO_GROUP1",															GameMessage::MSG_META_AUTO_GROUP1 },
 	{ "AUTO_GROUP2",															GameMessage::MSG_META_AUTO_GROUP2 },
 	{ "AUTO_GROUP3",															GameMessage::MSG_META_AUTO_GROUP3 },
@@ -914,6 +915,19 @@ MetaMapRec *MetaMap::getMetaMapRec(GameMessage::Type t)
 			map->m_category = CATEGORY_SELECTION;
 			map->m_description = TheGameText->FETCH_OR_SUBSTITUTE("GUI:SelectNextIdleWorkerDescription", L"Select the next idle worker");
 			map->m_displayName = TheGameText->FETCH_OR_SUBSTITUTE("GUI:SelectNextIdleWorker", L"Next Idle Worker");
+		}
+	}
+	{
+		MetaMapRec *map = TheMetaMap->getMetaMapRec(GameMessage::MSG_META_FORCE_DESYNC);
+		if (map->m_key == MK_NONE)
+		{
+			map->m_key = MK_F3;
+			map->m_transition = DOWN;
+			map->m_modState = SHIFT_CTRL;
+			map->m_usableIn = COMMANDUSABLE_GAME;
+			map->m_category = CATEGORY_DEBUG;
+			map->m_description = TheGameText->FETCH_OR_SUBSTITUTE("GUI:ForceDesyncDesc", L"Force a desync for testing network mismatch handling");
+			map->m_displayName = TheGameText->FETCH_OR_SUBSTITUTE("GUI:ForceDesync", L"Force Desync");
 		}
 	}
 
