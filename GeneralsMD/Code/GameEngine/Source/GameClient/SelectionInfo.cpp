@@ -388,6 +388,30 @@ Bool addDrawableToList( Drawable *draw, void *userData )
 	}
 #endif
 
+	// When showing objects under fog, allow selection through fog-of-war.
+	// if the option is disabled, prevent selecting enemy/neutral units that are only seen via fog.
+	{
+		const Object *obj = draw->getObject();
+		if (obj && ThePlayerList)
+		{
+			const Player *player = ThePlayerList->getLocalPlayer();
+			if (player)
+			{
+				Relationship rel = player->getRelationship(obj->getTeam());
+				if (rel == NEUTRAL || rel == ENEMIES)
+				{
+					if (!TheGlobalData->m_showObjectsUnderFog)
+					{
+						if (obj->getShroudedStatus(player->getPlayerIndex()) >= OBJECTSHROUD_FOGGED)
+						{
+							return FALSE;
+						}
+					}
+				}
+			}
+		}
+	}
+
 	pds->drawableListToFill->push_back(draw);
 	return TRUE;
 }

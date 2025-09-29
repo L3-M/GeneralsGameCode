@@ -1323,9 +1323,9 @@ void InGameUI::setRadiusCursor(RadiusCursorType cursorType, const SpecialPowerTe
 	Object* obj = NULL;
 	if( m_pendingGUICommand && m_pendingGUICommand->getCommandType() == GUI_COMMAND_SPECIAL_POWER_FROM_SHORTCUT )
 	{
-		if( ThePlayerList && ThePlayerList->getLocalPlayer() && specPowTempl != NULL )
+		if( TheControlBar && TheControlBar->getSpecialPowerOwnerPlayer() && specPowTempl != NULL)
 		{
-			obj = ThePlayerList->getLocalPlayer()->findMostReadyShortcutSpecialPowerOfType( specPowTempl->getSpecialPowerType() );
+			obj = TheControlBar->getSpecialPowerOwnerPlayer()->findMostReadyShortcutSpecialPowerOfType( specPowTempl->getSpecialPowerType() );
 		}
 	}
 	else
@@ -1349,6 +1349,7 @@ void InGameUI::setRadiusCursor(RadiusCursorType cursorType, const SpecialPowerTe
 
 	Real radius = 0.0f;
 	const Weapon* w = NULL;
+	Bool isSpecialPowerCursor = FALSE;
 	switch (cursorType)
 	{
 		// already handled
@@ -1394,6 +1395,7 @@ void InGameUI::setRadiusCursor(RadiusCursorType cursorType, const SpecialPowerTe
 		case RADIUSCURSOR_RADAR:
 		case RADIUSCURSOR_SPYDRONE:
 		case RADIUSCURSOR_AMBULANCE:
+			isSpecialPowerCursor = TRUE;
 			radius = specPowTempl ? specPowTempl->getRadiusCursorRadius() : 0.0f;
 			break;
 
@@ -1403,7 +1405,12 @@ void InGameUI::setRadiusCursor(RadiusCursorType cursorType, const SpecialPowerTe
 		return;
 
 	Coord3D pos = { 0, 0, 0 };	// will be updated right away
-	m_radiusCursors[cursorType].createRadiusDecal(pos, radius, controller, m_curRadiusCursor);
+	Player* decalOwner = controller;
+	if (isSpecialPowerCursor && ThePlayerList && ThePlayerList->getLocalPlayer())
+	{
+		decalOwner = ThePlayerList->getLocalPlayer();
+	}
+	m_radiusCursors[cursorType].createRadiusDecal(pos, radius, decalOwner, m_curRadiusCursor);
 	m_curRcType = cursorType;
 
 	handleRadiusCursor();

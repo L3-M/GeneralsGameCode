@@ -783,6 +783,10 @@ public:
 
 	Bool hasAnyShortcutSelection() const;
 
+	// Returns the player whose Special Power shortcuts are shown.
+	// Defaults to local player when not overridden.
+	Player* getSpecialPowerOwnerPlayer() const;
+
 protected:
 	void updateRadarAttackGlow ( void );
 
@@ -922,6 +926,11 @@ protected:
 
 	WindowLayout *m_specialPowerLayout;
 	GameWindow *m_specialPowerShortcutParent;
+
+	// When selecting another player's Command Center, we expose their
+	// Generals powers in the shortcut bar by switching ownership here.
+	// If null, falls back to local player.
+	Player* m_specialPowerOwnerPlayer;
 
 	GameWindow *m_commandWindows[ MAX_COMMANDS_PER_SET ];			///< command window controls for easy access
 	const CommandButton *m_commonCommands[ MAX_COMMANDS_PER_SET ];	///< shared commands we will use for multi-selection

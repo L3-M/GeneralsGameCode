@@ -979,6 +979,9 @@ ControlBar::ControlBar( void )
 	m_remainingRadarAttackGlowFrames = 0;
 	m_radarAttackGlowWindow = NULL;
 
+	// Default to local player's powers
+	m_specialPowerOwnerPlayer = NULL;
+
 #if defined(RTS_DEBUG)
 	m_lastFrameMarkedDirty = 0;
 	m_consecutiveDirtyFrames = 0;
@@ -1527,7 +1530,7 @@ void ControlBar::update( void )
 	if( m_UIDirty )
 	{
 		evaluateContextUI();
-		populateSpecialPowerShortcut(ThePlayerList->getLocalPlayer());
+		populateSpecialPowerShortcut(getSpecialPowerOwnerPlayer());
 		// if we have a build tooltip layout, update it with the new data.
 		repopulateBuildTooltipLayout();
 	}
@@ -1761,6 +1764,30 @@ void ControlBar::evaluateContextUI( void )
 	// sanity
 	if( selectedDrawables->empty() == TRUE )
 		return;
+
+	// Before gating on controllability, update which player's Special Powers we show.
+	// If exactly one Command Center is selected (even if not locally controlled),
+	// switch the Special Power shortcut owner to that CC's controlling player.
+	{
+		Player *newOwner = ThePlayerList ? ThePlayerList->getLocalPlayer() : NULL;
+		if (TheInGameUI->getSelectCount() == 1)
+		{
+			Drawable *onlyDraw = selectedDrawables->front();
+			Object *onlyObj = onlyDraw ? onlyDraw->getObject() : NULL;
+			if (onlyObj && onlyObj->isKindOf(KINDOF_COMMANDCENTER) && onlyObj->getControllingPlayer())
+			{
+				newOwner = onlyObj->getControllingPlayer();
+			}
+		}
+		if (newOwner != m_specialPowerOwnerPlayer)
+		{
+			m_specialPowerOwnerPlayer = newOwner;
+			if (m_specialPowerOwnerPlayer)
+			{
+				initSpecialPowershortcutBar(m_specialPowerOwnerPlayer);
+			}
+		}
+	}
 
 	//Make sure the selected objects are in fact, controllable! If not, then
 	//we don't show any GUI commands for them!!!
@@ -3256,7 +3283,7 @@ void ControlBar::initSpecialPowershortcutBar( Player *player)
 	m_currentlyUsedSpecialPowersButtons = 0;
 	const PlayerTemplate *pt = player->getPlayerTemplate();
 
-	if(!player || !pt|| !player->isLocalPlayer()
+	if(!player || !pt
 			|| pt->getSpecialPowerShortcutButtonCount() == 0
 			|| pt->getSpecialPowerShortcutWinName().isEmpty()
 			|| !player->isPlayerActive())
@@ -3300,7 +3327,7 @@ void ControlBar::populateSpecialPowerShortcut( Player *player)
 	const CommandSet *commandSet;
 	Int i;
 	if(!player || !player->getPlayerTemplate()
-			|| !player->isLocalPlayer() || m_currentlyUsedSpecialPowersButtons == 0
+			|| m_currentlyUsedSpecialPowersButtons == 0
 			|| m_specialPowerShortcutButtons == NULL || m_specialPowerShortcutButtonParents == NULL)
 		return;
 	for( i = 0; i < MAX_SPECIAL_POWER_SHORTCUTS; ++i )
@@ -3341,7 +3368,7 @@ void ControlBar::populateSpecialPowerShortcut( Player *player)
 			if( BitIsSet( commandButton->getOptions(), NEED_UPGRADE ) )
 			{
 				const UpgradeTemplate *upgrade = commandButton->getUpgradeTemplate();
-				if( upgrade && !ThePlayerList->getLocalPlayer()->hasUpgradeComplete( upgrade->getUpgradeMask() ) )
+				if( upgrade && !(player && player->hasUpgradeComplete( upgrade->getUpgradeMask() )) )
 				{
 					//Kris: 8/13/03 - Don't show shortcut buttons that require upgrades we don't have. As far as
 					//I know, only the radar van scan has this. The MOAB is handled differently (sciences).
@@ -3365,7 +3392,7 @@ void ControlBar::populateSpecialPowerShortcut( Player *player)
 				}
 
 				//We just need to find something that has the power.
-				Object *obj = ThePlayerList->getLocalPlayer()->findMostReadyShortcutSpecialPowerOfType( commandButton->getSpecialPowerTemplate()->getSpecialPowerType() );
+				Object *obj = player->findMostReadyShortcutSpecialPowerOfType( commandButton->getSpecialPowerTemplate()->getSpecialPowerType() );
 				if( !obj )
 				{
 					continue;
@@ -3550,14 +3577,22 @@ Bool ControlBar::hasAnyShortcutSelection() const
 }
 
 //-------------------------------------------------------------------------------------------------
+Player *ControlBar::getSpecialPowerOwnerPlayer() const
+{
+	if (m_specialPowerOwnerPlayer)
+		return m_specialPowerOwnerPlayer;
+	return ThePlayerList ? ThePlayerList->getLocalPlayer() : NULL;
+}
+
+//-------------------------------------------------------------------------------------------------
 void ControlBar::updateSpecialPowerShortcut( void )
 {
 	if(!m_specialPowerShortcutParent || !m_specialPowerShortcutButtons
-	   || !ThePlayerList || !ThePlayerList->getLocalPlayer())
+	   || !ThePlayerList || !getSpecialPowerOwnerPlayer())
 		return;
 
 	Bool hasShortcutSelectionButtons = hasAnyShortcutSelection();
-	Bool hasAnyShortcutSpecialPower = ThePlayerList->getLocalPlayer()->hasAnyShortcutSpecialPower();
+	Bool hasAnyShortcutSpecialPower = getSpecialPowerOwnerPlayer()->hasAnyShortcutSpecialPower();
 
 	Bool hasValidShortcutButton = hasShortcutSelectionButtons || hasAnyShortcutSpecialPower;
 
@@ -3579,7 +3614,7 @@ void ControlBar::updateSpecialPowerShortcut( void )
 	if(m_specialPowerShortcutParent->winIsHidden())
 		return;
 
-	if(!ThePlayerList->getLocalPlayer()->isPlayerActive())
+	if (!getSpecialPowerOwnerPlayer()->isPlayerActive())
 	{
 		hideSpecialPowerShortcut();
 		return;
@@ -3615,20 +3650,20 @@ void ControlBar::updateSpecialPowerShortcut( void )
 		Object *obj = NULL;
 		if( spTemplate )
 		{
-			obj = ThePlayerList->getLocalPlayer()->findMostReadyShortcutSpecialPowerOfType( command->getSpecialPowerTemplate()->getSpecialPowerType() );
+			obj = getSpecialPowerOwnerPlayer()->findMostReadyShortcutSpecialPowerOfType( command->getSpecialPowerTemplate()->getSpecialPowerType() );
 			availability = getCommandAvailability( command, obj, win );
 		}
 		else if( command->getCommandType() == GUI_COMMAND_SELECT_ALL_UNITS_OF_TYPE )
 		{
 			availability = COMMAND_HIDDEN;
-			Object *obj = ThePlayerList->getLocalPlayer()->findAnyExistingObjectWithThingTemplate( command->getThingTemplate() );
+			Object *obj = getSpecialPowerOwnerPlayer()->findAnyExistingObjectWithThingTemplate(command->getThingTemplate());
 			if( obj )
 			{
 				//Make command available if it isn't a special power template shortcut power.
 				availability = COMMAND_AVAILABLE;
 
 				UnsignedInt mostReadyPercentage;
-				obj = ThePlayerList->getLocalPlayer()->findMostReadyShortcutSpecialPowerForThing( command->getThingTemplate(), mostReadyPercentage );
+				obj = getSpecialPowerOwnerPlayer()->findMostReadyShortcutSpecialPowerForThing( command->getThingTemplate(), mostReadyPercentage );
 				if( obj )
 				{
 					//Ugh... hacky.
@@ -3708,7 +3743,7 @@ void ControlBar::drawSpecialPowerShortcutMultiplierText()
 			Int numReady = 0;
 			if( spTemplate )
 			{
-				numReady = ThePlayerList->getLocalPlayer()->countReadyShortcutSpecialPowersOfType( spTemplate->getSpecialPowerType() );
+				numReady = getSpecialPowerOwnerPlayer()->countReadyShortcutSpecialPowersOfType( spTemplate->getSpecialPowerType() );
 			}
 			if( numReady > 1 ) // Lorenzen changed... Displaying a "1" is superfluous
 			{
@@ -3761,7 +3796,7 @@ void ControlBar::animateSpecialPowerShortcut( Bool isOn )
 void ControlBar::showSpecialPowerShortcut( void )
 {
 	if(TheScriptEngine->isGameEnding() || !m_specialPowerShortcutParent
-		||!m_specialPowerShortcutButtons || !ThePlayerList || !ThePlayerList->getLocalPlayer())
+		||!m_specialPowerShortcutButtons || !ThePlayerList || !getSpecialPowerOwnerPlayer())
 		return;
 	Bool dontAnimate = TRUE;
 	for( Int i = 0; i < m_currentlyUsedSpecialPowersButtons; ++i )
@@ -3772,10 +3807,10 @@ void ControlBar::showSpecialPowerShortcut( void )
 			break;
 		}
 	}
-	if( dontAnimate || (!ThePlayerList->getLocalPlayer()->hasAnyShortcutSpecialPower() && !hasAnyShortcutSelection()) )
+	if( dontAnimate || (!getSpecialPowerOwnerPlayer()->hasAnyShortcutSpecialPower() && !hasAnyShortcutSelection()) )
 		return;
 	m_specialPowerShortcutParent->winHide(FALSE);
-	populateSpecialPowerShortcut(ThePlayerList->getLocalPlayer());
+	populateSpecialPowerShortcut(getSpecialPowerOwnerPlayer());
 
 }
 

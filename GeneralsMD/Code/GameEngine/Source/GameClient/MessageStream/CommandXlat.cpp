@@ -1728,7 +1728,9 @@ GameMessage::Type CommandTranslator::evaluateContextCommand( Drawable *draw,
 #endif
 				case GUI_COMMAND_SPECIAL_POWER_FROM_SHORTCUT:
 				{
-					Object* unit = ThePlayerList->getLocalPlayer()->findMostReadyShortcutSpecialPowerOfType( command->getSpecialPowerTemplate()->getSpecialPowerType() );
+					Object* unit = (TheControlBar && TheControlBar->getSpecialPowerOwnerPlayer())
+														 ? TheControlBar->getSpecialPowerOwnerPlayer()->findMostReadyShortcutSpecialPowerOfType(command->getSpecialPowerTemplate()->getSpecialPowerType() )
+														 : NULL;
 					if( unit )
 						currentlyValid = TheInGameUI->canSelectedObjectsDoSpecialPower( command, obj, pos, InGameUI::SELECTION_ANY, command->getOptions(), unit );
 					else
@@ -1764,7 +1766,9 @@ GameMessage::Type CommandTranslator::evaluateContextCommand( Drawable *draw,
 #endif
 						case GUI_COMMAND_SPECIAL_POWER_FROM_SHORTCUT:
 						{
-							Object* unit = ThePlayerList->getLocalPlayer()->findMostReadyShortcutSpecialPowerOfType( command->getSpecialPowerTemplate()->getSpecialPowerType() );
+							Object* unit = (TheControlBar && TheControlBar->getSpecialPowerOwnerPlayer())
+																 ? TheControlBar->getSpecialPowerOwnerPlayer()->findMostReadyShortcutSpecialPowerOfType(command->getSpecialPowerTemplate()->getSpecialPowerType() )
+																 : NULL;
 							if( unit )
 								msgType = issueSpecialPowerCommand( command, type, draw, pos, unit );
 							break;
@@ -1815,7 +1819,9 @@ GameMessage::Type CommandTranslator::evaluateContextCommand( Drawable *draw,
 				{
 					case GUI_COMMAND_SPECIAL_POWER_FROM_SHORTCUT:
 					{
-						Object* unit = ThePlayerList->getLocalPlayer()->findMostReadyShortcutSpecialPowerOfType( command->getSpecialPowerTemplate()->getSpecialPowerType() );
+						Object* unit = (TheControlBar && TheControlBar->getSpecialPowerOwnerPlayer())
+															 ? TheControlBar->getSpecialPowerOwnerPlayer()->findMostReadyShortcutSpecialPowerOfType(command->getSpecialPowerTemplate()->getSpecialPowerType() )
+															 : NULL;
 						if( unit )
 							msgType = issueSpecialPowerCommand( command, type, draw, pos, unit );
 						break;

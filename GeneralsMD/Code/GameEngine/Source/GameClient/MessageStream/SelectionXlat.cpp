@@ -172,17 +172,8 @@ Bool CanSelectDrawable( const Drawable *draw, Bool dragSelecting )
 	}
 
 	//
-	// structures cannot be selected by a drag select, you must individually pick them
-	// NOTE that this is really a convenience for the multi select context sensitive UI,
-	// later we might want to allow you to drag select buildings if only one building is
-	// actually in the selection area, but don't forget complications like holding down
-	// a key to "add" to an already existing selection list
-	//
-	// not allowing you to have multiple buildings selected drastically simplifies the
-	// user interface ... including all those context sensitive commands that we
-	// can just assume are for a single building selected.
-	//
-	if( dragSelecting && draw->isKindOf( KINDOF_STRUCTURE ) )
+	// structures cannot be drag-selected, except Command Centers (so observer-style CC selection works)
+	if( dragSelecting && draw->isKindOf( KINDOF_STRUCTURE ) && !draw->isKindOf(KINDOF_COMMANDCENTER))
 	{
 		return FALSE;
 	}

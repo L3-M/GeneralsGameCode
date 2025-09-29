@@ -1012,11 +1012,10 @@ CommandAvailability ControlBar::getCommandAvailability( const CommandButton *com
 																												GameWindow *applyToWin,
 																												Bool forceDisabledEvaluation ) const
 {
-	if(	command->getCommandType() == GUI_COMMAND_SPECIAL_POWER_FROM_SHORTCUT
-			|| command->getCommandType() == GUI_COMMAND_SPECIAL_POWER_CONSTRUCT_FROM_SHORTCUT )
+	if(	command->getCommandType() == GUI_COMMAND_SPECIAL_POWER_FROM_SHORTCUT || command->getCommandType() == GUI_COMMAND_SPECIAL_POWER_CONSTRUCT_FROM_SHORTCUT )
 	{
-		if (ThePlayerList && ThePlayerList->getLocalPlayer())
-			obj = ThePlayerList->getLocalPlayer()->findMostReadyShortcutSpecialPowerOfType( command->getSpecialPowerTemplate()->getSpecialPowerType() );
+		if (ThePlayerList && TheControlBar && TheControlBar->getSpecialPowerOwnerPlayer())
+			obj = TheControlBar->getSpecialPowerOwnerPlayer()->findMostReadyShortcutSpecialPowerOfType(command->getSpecialPowerTemplate()->getSpecialPowerType());
 		else
 			obj = NULL;
 	}

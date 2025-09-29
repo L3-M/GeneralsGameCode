@@ -278,7 +278,9 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 			//Determine the object that would construct it.
 			const SpecialPowerTemplate *spTemplate = commandButton->getSpecialPowerTemplate();
 			SpecialPowerType spType = spTemplate->getSpecialPowerType();
-			Object* obj = ThePlayerList->getLocalPlayer()->findMostReadyShortcutSpecialPowerOfType( spType );
+			Object* obj = (TheControlBar && TheControlBar->getSpecialPowerOwnerPlayer())
+												? TheControlBar->getSpecialPowerOwnerPlayer()->findMostReadyShortcutSpecialPowerOfType( spType )
+												: NULL;
 			if( !obj )
 				break;
 			Drawable *draw = obj->getDrawable();
@@ -841,7 +843,9 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 			const SpecialPowerTemplate *spTemplate = commandButton->getSpecialPowerTemplate();
 			SpecialPowerType spType = spTemplate->getSpecialPowerType();
 
-			Object* obj = ThePlayerList->getLocalPlayer()->findMostReadyShortcutSpecialPowerOfType( spType );
+			Object* obj = (TheControlBar && TheControlBar->getSpecialPowerOwnerPlayer())
+												? TheControlBar->getSpecialPowerOwnerPlayer()->findMostReadyShortcutSpecialPowerOfType( spType )
+												: NULL;
 			if( !obj )
 				break;
 
